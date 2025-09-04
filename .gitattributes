@@ -1,0 +1,10 @@
+# Always store LF in repo
+* text=auto eol=lf
+
+# Binary (no conversion)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
