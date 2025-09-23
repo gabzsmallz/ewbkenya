@@ -9,7 +9,7 @@ export default function AdminProjects(){
   const del=async(id)=>{ if(!confirm('Delete project?')) return; const r=await fetch('/api/admin/projects',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})}); if(r.ok) load(); };
   return(<Layout title="Admin • Projects"><AdminOnly>
     <div className="grid md:grid-cols-2 gap-6">
-      <div className="card"><h2 className="text-xl font-semibold mb-3">Create / Edit Project</h2>
+      <div className="card shadow-brand"><h2 className="text-xl font-semibold mb-3">Create / Edit Project</h2>
         <form onSubmit={save} className="space-y-2">
           <input className="w-full border rounded p-2" placeholder="Title" value={form.title} onChange={e=>setForm({...form,title:e.target.value})}/>
           <input className="w-full border rounded p-2" placeholder="Slug" value={form.slug} onChange={e=>setForm({...form,slug:e.target.value})}/>
@@ -20,8 +20,8 @@ export default function AdminProjects(){
           <button className="btn btn-primary" disabled={busy}>{busy?'Saving…':'Save Project'}</button>
         </form>
       </div>
-      <div className="card"><h2 className="text-xl font-semibold mb-3">Projects</h2>
-        <div className="space-y-3">{Array.isArray(projects)&&projects.length?projects.map(p=>(<div key={p.id} className="border rounded p-3"><div className="flex items-center justify-between"><div><div className="font-semibold">{p.title}</div><div className="text-xs text-gray-500">{p.slug} • {p.status}</div></div><button className="btn" onClick={()=>del(p.id)}>Delete</button></div></div>)):<p>No projects yet.</p>}</div>
+      <div className="card shadow-brand"><h2 className="text-xl font-semibold mb-3">Projects</h2>
+        <div className="space-y-3">{Array.isArray(projects)&&projects.length?projects.map(p=>(<div key={p.id} className="border rounded p-3"><div className="flex items-center justify-between"><div><div className="font-semibold">{p.title}</div><div className="text-xs text-gray-500">{p.slug} • {p.status}</div></div><button className="btn btn-ghost" onClick={()=>del(p.id)}>Delete</button></div></div>)):<p>No projects yet.</p>}</div>
       </div>
     </div>
   </AdminOnly></Layout>);

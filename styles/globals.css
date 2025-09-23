@@ -1,8 +1,61 @@
-@tailwind base; @tailwind components; @tailwind utilities;
-body{ @apply bg-gray-50 text-gray-900; }
-a{ @apply text-blue-600 hover:underline; }
+:root{
+  --brand-primary: #294B08;  /* deep forest */
+  --brand-accent:  #3A6223;  /* lively green */
+  --brand-muted:   #798E64;  /* olive */
+  --brand-bg:      #E6EAE2;  /* light background */
+  --brand-tint:    #B5C1AA;  /* soft tint */
+  --brand-text:    #1F2937;  /* charcoal */
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base */
+body{ background: var(--brand-bg); color: var(--brand-text); }
+a{ text-underline-offset: 2px; }
+
+/* Containers */
 .container{ @apply max-w-6xl mx-auto px-4; }
-.card{ @apply bg-white rounded-2xl shadow p-6; }
-.btn{ @apply inline-flex items-center px-4 py-2 rounded-lg shadow; }
-.btn-primary{ @apply bg-brand-primary text-white hover:bg-blue-700; }
-.badge{ @apply inline-block text-xs px-2 py-1 rounded-full bg-gray-100; }
+
+/* Cards & badges */
+.card{
+  @apply bg-white rounded-2xl shadow p-6 border;
+  border-color: color-mix(in srgb, var(--brand-muted) 20%, white);
+}
+.badge{
+  @apply inline-block text-xs px-2 py-1 rounded-full;
+  background: color-mix(in srgb, var(--brand-accent) 18%, white);
+}
+
+/* Buttons */
+.btn{ @apply inline-flex items-center px-4 py-2 rounded-xl shadow transition; }
+.btn-primary{
+  color: white;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--brand-primary) 88%, white),
+    var(--brand-primary)
+  );
+}
+.btn-primary:hover{ filter: brightness(1.05); }
+.btn-ghost{
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--brand-muted) 40%, white);
+  color: var(--brand-text);
+}
+
+/* Section accents */
+.section{
+  background:
+    radial-gradient(1200px 400px at 10% -10%, color-mix(in srgb, var(--brand-accent) 16%, transparent), transparent 60%),
+    radial-gradient(1000px 300px at 100% 0%, color-mix(in srgb, var(--brand-tint) 22%, transparent), transparent 70%);
+}
+.hr-accent{
+  height: 3px; border-radius: 999px;
+  background: linear-gradient(90deg, var(--brand-primary), var(--brand-accent), var(--brand-tint));
+}
+
+/* Shadow util */
+.shadow-brand{
+  box-shadow: 0 10px 30px -10px color-mix(in srgb, var(--brand-primary) 28%, transparent);
+}
