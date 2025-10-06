@@ -1,10 +1,64 @@
-import { useState } from 'react'; import { getSupabase } from '../lib/supabaseClient';
-export default function UploadImage({ onUploaded, bucket='media' }){
-  const supabase=getSupabase(); const [busy,setBusy]=useState(false); const [error,setError]=useState(null);
-  const onFile=async(e)=>{ const file=e.target.files?.[0]; if(!file) return; setBusy(true); setError(null);
-    try{ const ext=file.name.split('.').pop(); const path=`${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error:upErr } = await supabase.storage.from(bucket).upload(path,file,{upsert:false}); if(upErr) throw upErr;
-      const { data } = supabase.storage.from(bucket).getPublicUrl(path); onUploaded?.(data.publicUrl);
-    }catch(err){ setError(err.message||'Upload failed'); }finally{ setBusy(false); } };
-  return(<div><input type="file" accept="image/*" onChange={onFile} disabled={busy}/>{busy&&<p className="text-sm text-gray-500 mt-1">Uploading…</p>}{error&&<p className="text-sm text-red-600 mt-1">{error}</p>}</div>);
+import { useState } from 'react';
+
+async function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result;
+      if (typeof result === 'string') {
+        const base64 = result.includes(',') ? result.split(',')[1] : result;
+        resolve(base64);
+      } else {
+        reject(new Error('Unable to read file'));
+      }
+    };
+    reader.onerror = () => reject(reader.error || new Error('Unable to read file'));
+    reader.readAsDataURL(file);
+  });
+}
+
+export default function UploadImage({ onUploaded, bucket = 'media' }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null);
+
+  const onFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBusy(true);
+    setError(null);
+
+    try {
+      const base64 = await fileToBase64(file);
+      const response = await fetch('/api/admin/uploads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bucket,
+          name: file.name,
+          contentType: file.type,
+          base64,
+        }),
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || 'Upload failed');
+      }
+
+      const { url } = await response.json();
+      onUploaded?.(url);
+    } catch (err) {
+      setError(err.message || 'Upload failed');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div>
+      <input type="file" accept="image/*" onChange={onFile} disabled={busy} />
+      {busy && <p className="text-sm text-gray-500 mt-1">Uploading…</p>}
+      {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
+    </div>
+  );
 }
