@@ -6,7 +6,8 @@ const navItems = [
   { href: '/admin/projects', label: 'Projects' },
   { href: '/admin/member-dashboard', label: 'Member Dashboard' },
   { href: '/admin/announcements', label: 'Announcements' },
-  { href: '/admin/pages', label: 'Landing Page' }
+  { href: '/admin/pages', label: 'Landing Page' },
+  { href: '/admin/settings', label: 'Site Settings' }
 ];
 
 export default function AdminShell({ children }) {
