@@ -1,4 +1,4 @@
-import Layout from '../../components/Layout'; import AdminOnly from '../../components/AdminOnly'; import { useEffect, useState } from 'react';
+import Layout from '../../components/Layout'; import AdminOnly from '../../components/AdminOnly'; import { useEffect, useState } from 'react'; import AdminShell from '../../components/AdminShell';
 const blankForm=()=>({title:'',description:'',link_label:'',link_url:'',sort_order:0});
 export default function AdminMemberDashboard(){
   const [items,setItems]=useState([]);
@@ -22,7 +22,7 @@ export default function AdminMemberDashboard(){
   };
   const cancelEdit=()=>{ startNew(); };
   const del=async(id)=>{ if(!confirm('Delete item?')) return; const r=await fetch('/api/admin/member-dashboard',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})}); if(r.ok) load(); };
-  return(<Layout title="Admin • Member Dashboard"><AdminOnly>
+  return(<Layout title="Admin • Member Dashboard"><AdminOnly><AdminShell>
     <div className="grid md:grid-cols-2 gap-6">
       <div className="card shadow-brand"><h2 className="text-xl font-semibold mb-3">{editingId?'Edit Item':'Create Item'}</h2>
         <form onSubmit={save} className="space-y-2">
@@ -54,5 +54,5 @@ export default function AdminMemberDashboard(){
         </div>)):<p>No dashboard items yet.</p>}</div>
       </div>
     </div>
-  </AdminOnly></Layout>);
+  </AdminShell></AdminOnly></Layout>);
 }

@@ -1,4 +1,4 @@
-import Layout from '../../components/Layout'; import AdminOnly from '../../components/AdminOnly'; import UploadImage from '../../components/UploadImage'; import { useEffect, useState } from 'react';
+import Layout from '../../components/Layout'; import AdminOnly from '../../components/AdminOnly'; import UploadImage from '../../components/UploadImage'; import { useEffect, useState } from 'react'; import AdminShell from '../../components/AdminShell';
 export default function AdminProjects(){
   const [projects,setProjects]=useState([]);
   const blankForm=()=>({title:'',slug:'',summary:'',description:'',status:'planned',cover_image_url:''});
@@ -29,7 +29,7 @@ export default function AdminProjects(){
     if(r.ok){ startNew(); load(); } else alert('Save failed'); };
   const cancelEdit=()=>{ startNew(); };
   const del=async(id)=>{ if(!confirm('Delete project?')) return; const r=await fetch('/api/admin/projects',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})}); if(r.ok) load(); };
-  return(<Layout title="Admin • Projects"><AdminOnly>
+  return(<Layout title="Admin • Projects"><AdminOnly><AdminShell>
     <div className="grid md:grid-cols-2 gap-6">
       <div className="card shadow-brand"><h2 className="text-xl font-semibold mb-3">{editingId?'Edit Project':'Create Project'}</h2>
         <form onSubmit={save} className="space-y-2">
@@ -49,5 +49,5 @@ export default function AdminProjects(){
         <div className="space-y-3">{Array.isArray(projects)&&projects.length?projects.map(p=>(<div key={p.id} className={`border rounded p-3 ${editingId===p.id?'border-brand-500':'border-gray-200'}`}><div className="flex items-center justify-between"><div><div className="font-semibold">{p.title}</div><div className="text-xs text-gray-500">{p.slug} • {p.status}</div></div><div className="flex items-center gap-2"><button className="btn btn-ghost" onClick={()=>startEdit(p)}>Edit</button><button className="btn btn-ghost" onClick={()=>del(p.id)}>Delete</button></div></div></div>)):<p>No projects yet.</p>}</div>
       </div>
     </div>
-  </AdminOnly></Layout>);
+  </AdminShell></AdminOnly></Layout>);
 }
