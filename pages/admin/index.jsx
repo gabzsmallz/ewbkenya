@@ -1,2 +1,25 @@
 import Layout from '../../components/Layout';
-export default function Admin(){ return(<Layout title="Admin"><div className="card"><h1 className="text-2xl font-bold" style={{color:'var(--brand-primary)'}}>Admin</h1><ul className="list-disc ml-6 mt-3"><li><a href="/admin/projects">Projects</a></li><li><a href="/admin/announcements">Announcements</a></li><li><a href="/admin/member-dashboard">Member Dashboard</a></li><li><a href="/admin/pages">Pages</a></li></ul></div></Layout>); }
+import AdminOnly from '../../components/AdminOnly';
+import AdminShell from '../../components/AdminShell';
+
+export default function Admin(){
+  return (
+    <Layout title="Admin">
+      <AdminOnly>
+        <AdminShell>
+          <div className="card shadow-brand">
+            <h1 className="text-2xl font-bold" style={{ color: 'var(--brand-primary)' }}>
+              Admin Overview
+            </h1>
+            <p className="mt-3 text-sm md:text-base">
+              Use the menu to manage projects, member dashboard content, and announcements for the community.
+            </p>
+            <p className="mt-2 text-sm md:text-base">
+              Access each section to create, update, or remove content as needed. Changes are saved instantly for members.
+            </p>
+          </div>
+        </AdminShell>
+      </AdminOnly>
+    </Layout>
+  );
+}
