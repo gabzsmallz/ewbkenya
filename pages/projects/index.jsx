@@ -10,7 +10,13 @@ export default function Projects({projects}){
             <h3 className="text-lg font-semibold">{p.title}</h3>
             <span className="badge">{p.status}</span>
           </div>
-          {p.cover_image_url&&<img src={p.cover_image_url} alt={`${p.title} cover image`} className="rounded mt-3"/>}
+          {p.cover_image_url&&(
+            <img
+              src={p.cover_image_url}
+              alt={`${p.title} cover image`}
+              className="rounded mt-3 w-full max-h-60 object-cover"
+            />
+          )}
           <p className="mt-2 text-sm text-gray-600">{p.summary||''}</p>
           <a className="btn btn-primary mt-3" href={`/projects/${p.slug}`}>View</a>
         </div>
