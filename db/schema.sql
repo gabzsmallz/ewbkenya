@@ -61,6 +61,11 @@ create table if not exists public.member_dashboard_items (
   sort_order int default 0,
   created_at timestamptz default now()
 );
+create table if not exists public.site_settings (
+  key text primary key,
+  value text not null,
+  updated_at timestamptz default now()
+);
 alter table public.projects enable row level security;
 alter table public.project_updates enable row level security;
 alter table public.announcements enable row level security;
@@ -68,6 +73,7 @@ alter table public.members enable row level security;
 alter table public.project_signups enable row level security;
 alter table public.pages enable row level security;
 alter table public.member_dashboard_items enable row level security;
+alter table public.site_settings enable row level security;
 drop policy if exists "projects public read" on public.projects;
 create policy "projects public read" on public.projects for select using (true);
 drop policy if exists "updates public read" on public.project_updates;
@@ -76,6 +82,8 @@ drop policy if exists "pages public read" on public.pages;
 create policy "pages public read" on public.pages for select using (true);
 drop policy if exists "member dashboard public read" on public.member_dashboard_items;
 create policy "member dashboard public read" on public.member_dashboard_items for select using (true);
+drop policy if exists "site settings public read" on public.site_settings;
+create policy "site settings public read" on public.site_settings for select using (true);
 drop policy if exists "announcements members read" on public.announcements;
 create policy "announcements members read" on public.announcements for select using (true);
 drop policy if exists "members insert" on public.members;

@@ -1,11 +1,23 @@
 import Link from 'next/link'; import { getSupabase } from '../lib/supabaseClient'; import { useEffect, useState } from 'react';
 export default function Nav(){
-  const supabase=getSupabase(); const [user,setUser]=useState(null);
+  const supabase=getSupabase(); const [user,setUser]=useState(null); const [logoUrl,setLogoUrl]=useState(null);
   useEffect(()=>{ supabase.auth.getUser().then(({data})=>setUser(data?.user||null)); },[]);
+  useEffect(()=>{
+    let active=true;
+    supabase.from('site_settings').select('value').eq('key','site_logo_url').maybeSingle().then(({data,error})=>{
+      if(!active) return;
+      if(error) return;
+      setLogoUrl(data?.value||null);
+    });
+    return ()=>{ active=false; };
+  },[supabase]);
   const logout=async()=>{ await supabase.auth.signOut(); window.location.href='/'; };
   return(<nav className="bg-white/80 backdrop-blur border-b" style={{borderColor:'var(--brand-tint)'}}>
     <div className="container flex items-center justify-between py-3">
-      <Link href="/" className="font-semibold" style={{color:'var(--brand-primary)'}}>EWB Kenya Community</Link>
+      <Link href="/" className="flex items-center gap-3 font-semibold" style={{color:'var(--brand-primary)'}}>
+        {logoUrl?(<img src={logoUrl} alt="EWB Kenya Community logo" className="h-10 w-auto" loading="lazy"/>):null}
+        <span className="whitespace-nowrap">EWB Kenya Community</span>
+      </Link>
       <div className="space-x-4">
         <Link href="/projects" style={{color:'var(--brand-text)'}}>Projects</Link>
         <Link href="/donate" style={{color:'var(--brand-text)'}}>Donate</Link>
