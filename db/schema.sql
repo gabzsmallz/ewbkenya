@@ -41,7 +41,10 @@ create table if not exists public.project_signups (
   id bigserial primary key,
   project_id bigint references public.projects(id) on delete cascade,
   profile_id uuid references public.profiles(id),
-  message text, created_at timestamptz default now(),
+  message text,
+  skills text,
+  availability text,
+  created_at timestamptz default now(),
   unique(project_id, profile_id)
 );
 create table if not exists public.pages (
@@ -89,4 +92,9 @@ create policy "announcements members read" on public.announcements for select us
 drop policy if exists "members insert" on public.members;
 create policy "members insert" on public.members for insert with check (true);
 drop policy if exists "signups insert" on public.project_signups;
-create policy "signups insert" on public.project_signups for insert with check (true);
+drop policy if exists "signups insert own" on public.project_signups;
+drop policy if exists "signups select own" on public.project_signups;
+drop policy if exists "signups update own" on public.project_signups;
+create policy "signups insert own" on public.project_signups for insert with check (auth.uid() = profile_id);
+create policy "signups select own" on public.project_signups for select using (auth.uid() = profile_id);
+create policy "signups update own" on public.project_signups for update using (auth.uid() = profile_id) with check (auth.uid() = profile_id);
