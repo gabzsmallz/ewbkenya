@@ -14,20 +14,29 @@ export default function Project({ project, updates }){
   const [status,setStatus]=useState(null);
   const [loadingSignup,setLoadingSignup]=useState(true);
   const [hasSignup,setHasSignup]=useState(false);
+  const [volunteers,setVolunteers]=useState([]);
+  const [loadingVolunteers,setLoadingVolunteers]=useState(true);
+  const [volunteerError,setVolunteerError]=useState(null);
   useEffect(()=>{
     let active=true;
     const loadSignup=async()=>{
-      if(!project?.id){ if(active) setLoadingSignup(false); return; }
+      if(!project?.id){ if(active){ setLoadingSignup(false); setLoadingVolunteers(false); } return; }
       setLoadingSignup(true);
+      setLoadingVolunteers(true);
+      setVolunteerError(null);
       try{
         const { data } = await supabase.auth.getUser();
         if(!active) return;
-        if(!data?.user){ setLoadingSignup(false); return; }
-        const res=await fetch(`/api/project-signup?projectId=${project.id}`);
+        if(!data?.user){ if(active){ setLoadingSignup(false); setLoadingVolunteers(false); } return; }
+        const [res, listRes] = await Promise.all([
+          fetch(`/api/project-signup?projectId=${project.id}`),
+          fetch(`/api/project-signups?projectId=${project.id}`)
+        ]);
         const body=await res.json().catch(()=>null);
+        const listBody=await listRes.json().catch(()=>null);
         if(!active) return;
-        if(!res.ok){ if(res.status===403&&body?.error) setStatus({type:'error',text:body.error}); return; }
-        if(body?.signup){
+        if(!res.ok){ if(res.status===403&&body?.error) setStatus({type:'error',text:body.error}); }
+        else if(body?.signup){
           setMessage(body.signup.message||'');
           setSkills(body.signup.skills||'');
           setAvailability(body.signup.availability||'');
@@ -35,10 +44,27 @@ export default function Project({ project, updates }){
         }else{
           setMessage(''); setSkills(''); setAvailability(''); setHasSignup(false);
         }
+        if(listRes.ok){
+          setVolunteers(Array.isArray(listBody?.signups)?listBody.signups:[]);
+        }else{
+          setVolunteers([]);
+          if(listBody?.error){
+            setVolunteerError(listBody.error);
+          }else{
+            setVolunteerError('Unable to load project volunteers right now.');
+          }
+        }
       }catch(e){
         if(active) setStatus({type:'error',text:'Unable to load your volunteer details right now.'});
+        if(active){
+          setVolunteerError('Unable to load project volunteers right now.');
+          setVolunteers([]);
+        }
       }finally{
-        if(active) setLoadingSignup(false);
+        if(active){
+          setLoadingSignup(false);
+          setLoadingVolunteers(false);
+        }
       }
     };
     loadSignup();
@@ -79,6 +105,32 @@ export default function Project({ project, updates }){
       {updates.length===0&&<p>No updates yet.</p>}
     </div>
     <Protected>
+      <div className="card mt-6">
+        <h3 className="font-semibold mb-2">Members supporting this project</h3>
+        {loadingVolunteers&&<p className="text-sm text-gray-500">Loading volunteers…</p>}
+        {volunteerError&&!loadingVolunteers&&<p className="text-sm text-red-600">{volunteerError}</p>}
+        {!loadingVolunteers&&!volunteerError&&volunteers.length===0&&(
+          <p className="text-sm text-gray-600">No members have signed up yet.</p>
+        )}
+        {!loadingVolunteers&&!volunteerError&&volunteers.length>0&&(
+          <ul className="divide-y divide-gray-200">
+            {volunteers.map(v=>(
+              <li key={v.id} className="py-3">
+                <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between">
+                  <div>
+                    <p className="font-medium text-gray-900">{v?.profile?.full_name||'Member'}</p>
+                    {v?.profile?.email&&<p className="text-sm text-gray-600">{v.profile.email}</p>}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1 sm:mt-0">{new Date(v.created_at).toLocaleString()}</p>
+                </div>
+                {v.skills&&<p className="text-sm text-gray-700 mt-2"><span className="font-medium">Skills:</span> {v.skills}</p>}
+                {v.availability&&<p className="text-sm text-gray-700 mt-1"><span className="font-medium">Availability:</span> {v.availability}</p>}
+                {v.message&&<p className="text-sm text-gray-700 mt-1"><span className="font-medium">Notes:</span> {v.message}</p>}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
       <div className="card mt-6">
         <h3 className="font-semibold mb-2">Volunteer for this project</h3>
         <p className="text-sm text-gray-600">Tell us how you can support this project and when you're available.</p>
