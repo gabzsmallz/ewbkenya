@@ -95,6 +95,8 @@ drop policy if exists "signups insert" on public.project_signups;
 drop policy if exists "signups insert own" on public.project_signups;
 drop policy if exists "signups select own" on public.project_signups;
 drop policy if exists "signups update own" on public.project_signups;
+drop policy if exists "signups delete own" on public.project_signups;
 create policy "signups insert own" on public.project_signups for insert with check (auth.uid() = profile_id);
 create policy "signups select own" on public.project_signups for select using (auth.uid() = profile_id);
 create policy "signups update own" on public.project_signups for update using (auth.uid() = profile_id) with check (auth.uid() = profile_id);
+create policy "signups delete own" on public.project_signups for delete using (auth.uid() = profile_id);
