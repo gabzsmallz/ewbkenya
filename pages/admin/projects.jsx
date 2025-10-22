@@ -44,9 +44,9 @@ export default function AdminProjects(){
           <input className="w-full border rounded p-2" placeholder="Summary" value={form.summary} onChange={e=>setForm({...form,summary:e.target.value})}/>
           <textarea className="w-full border rounded p-2" rows={4} placeholder="Description" value={form.description} onChange={e=>setForm({...form,description:e.target.value})}/>
           <select className="w-full border rounded p-2" value={form.status} onChange={e=>setForm({...form,status:e.target.value})}>
-            {statusOptions.map(option=>(
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
+            <option value="planned">Planned</option>
+            <option value="in_progress">In Progress</option>
+            <option value="completed">Completed</option>
           </select>
           <div><label className="text-sm">Cover Image</label><UploadImage onUploaded={(url)=>setForm({...form,cover_image_url:url})}/>{form.cover_image_url&&<img src={form.cover_image_url} className="mt-2 rounded" />}</div>
           <div className="flex items-center gap-2">
