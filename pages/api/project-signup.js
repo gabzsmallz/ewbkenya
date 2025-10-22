@@ -11,9 +11,9 @@ export default async function handler(req,res){
   if(req.method==='GET'){
     const projectId=parseInt(req.query?.projectId,10);
     if(!projectId) return res.status(400).json({error:'Missing projectId'});
-    const { data:signup, error:signupError } = await supabase.from('project_signups').select('message,skills,availability,created_at').eq('project_id',projectId).eq('profile_id',profile.id).maybeSingle();
+    const { data:signup, error:signupError } = await supabase.from('project_signups').select('id,message,skills,availability,created_at').eq('project_id',projectId).eq('profile_id',profile.id).maybeSingle();
     if(signupError) return res.status(500).json({error:signupError.message});
-    return res.status(200).json({ signup: signup||null });
+    return res.status(200).json({ signup: signup||null, role: profile.role });
   }
   if(req.method==='POST'){
     const { projectId, message, skills, availability } = req.body||{};
@@ -41,6 +41,14 @@ export default async function handler(req,res){
     }
     return res.status(200).json({ok:true,message:existing?'Signup updated':'Signup submitted'});
   }
-  res.setHeader('Allow',['GET','POST']);
+  if(req.method==='DELETE'){
+    const { projectId } = req.body||{};
+    const projectIdNum=parseInt(projectId,10);
+    if(!projectIdNum) return res.status(400).json({error:'Missing projectId'});
+    const { error:deleteError } = await supabase.from('project_signups').delete().eq('project_id',projectIdNum).eq('profile_id',profile.id);
+    if(deleteError) return res.status(500).json({error:deleteError.message});
+    return res.status(200).json({ok:true,message:'Signup removed'});
+  }
+  res.setHeader('Allow',['GET','POST','DELETE']);
   return res.status(405).end(`Method ${req.method} Not Allowed`);
 }
