@@ -1,15 +1,9 @@
-import dynamic from 'next/dynamic';
 import Layout from '../../components/Layout';
 import AdminOnly from '../../components/AdminOnly';
 import { useEffect, useState } from 'react';
 import UploadImage from '../../components/UploadImage';
 import AdminShell from '../../components/AdminShell';
-
-const ReactQuill = dynamic(() => import('react-quill'), {
-  ssr: false,
-  loading: () => <textarea className="w-full border rounded p-2" rows={6} />,
-});
-import 'react-quill/dist/quill.snow.css';
+import WysiwygEditor from '../../components/WysiwygEditor';
 
 const defaultSections = [
   { key: 'about', title: 'About Us', content: '' },
@@ -151,8 +145,7 @@ export default function AdminPages() {
               )}
               <div>
                 <label className="text-sm block mb-1">Content</label>
-                <ReactQuill
-                  theme="snow"
+                <WysiwygEditor
                   value={page.content || ''}
                   onChange={(v) => setPage({ ...page, content: v })}
                 />
@@ -173,8 +166,7 @@ export default function AdminPages() {
                           updateSection(idx, { title: e.target.value })
                         }
                       />
-                      <ReactQuill
-                        theme="snow"
+                      <WysiwygEditor
                         value={section?.content || ''}
                         onChange={(v) => updateSection(idx, { content: v })}
                       />
