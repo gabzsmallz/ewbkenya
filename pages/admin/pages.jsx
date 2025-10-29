@@ -111,7 +111,11 @@ export default function AdminPages() {
       <AdminOnly>
         <AdminShell>
           <div className="card shadow-brand">
-            <h2 className="text-xl font-semibold mb-3">Landing Page Content</h2>
+            <h2 className="text-xl font-semibold mb-2">Website Page Content</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Choose a page below to load its content. The Donate page shares the same editor as the
+              landing page so you can adjust its copy right here.
+            </p>
             <form onSubmit={save} className="space-y-4">
               <div>
                 <label className="text-sm block mb-1">Page</label>

@@ -6,7 +6,7 @@ const navItems = [
   { href: '/admin/projects', label: 'Projects' },
   { href: '/admin/member-dashboard', label: 'Member Dashboard' },
   { href: '/admin/announcements', label: 'Announcements' },
-  { href: '/admin/pages', label: 'Landing Page' },
+  { href: '/admin/pages', label: 'Pages (Home & Donate)' },
   { href: '/admin/settings', label: 'Site Settings' }
 ];
 
