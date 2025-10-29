@@ -1,9 +1,21 @@
 import Layout from '../../components/Layout'; import { createClient } from '@supabase/supabase-js';
 export async function getServerSideProps(){ const s=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL,process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY); const {data:projects}=await s.from('projects').select('id,slug,title,summary,status,cover_image_url').order('created_at',{ascending:false}); return { props:{ projects: projects||[] } }; }
 export default function Projects({projects}){
+  const statusLabels={
+    planned:'Planned',
+    in_progress:'In Progress',
+    completed:'Completed'
+  };
+  const formatStatus=(status)=>{
+    if(!status) return 'Unknown';
+    if(statusLabels[status]) return statusLabels[status];
+    return status
+      .replace(/_/g,' ')
+      .replace(/\b\w/g,(char)=>char.toUpperCase());
+  };
   const totalProjects = Array.isArray(projects) ? projects.length : 0;
   const statusCounts = (Array.isArray(projects) ? projects : []).reduce((acc, project) => {
-    const status = project.status || 'Unknown';
+    const status = project.status || 'unknown';
     acc[status] = (acc[status] || 0) + 1;
     return acc;
   }, {});
@@ -39,7 +51,7 @@ export default function Projects({projects}){
                   className="inline-block h-3 w-3 rounded-full"
                   style={{backgroundColor: palette[index % palette.length]}}
                 />
-                <span className="font-medium text-gray-700">{status}</span>
+                <span className="font-medium text-gray-700">{formatStatus(status)}</span>
                 <span className="text-gray-500">{count}</span>
               </div>
             ))}
@@ -56,7 +68,7 @@ export default function Projects({projects}){
           <span className="absolute left-0 top-0 h-full w-1 rounded-l-xl" style={{background:'linear-gradient(var(--brand-primary), var(--brand-accent))'}}/>
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">{p.title}</h3>
-            <span className="badge">{p.status}</span>
+            <span className="badge">{formatStatus(p.status)}</span>
           </div>
           {p.cover_image_url&&(
             <img
