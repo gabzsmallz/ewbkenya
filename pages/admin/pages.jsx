@@ -62,11 +62,6 @@ export default function AdminPages() {
   const [page, setPage] = useState(getDefaultPage('home'));
   const [busy, setBusy] = useState(false);
 
-  const pageOptions = [
-    { value: 'home', label: 'Home Page' },
-    { value: 'donate', label: 'Donate Page' },
-  ];
-
   const load = async (nextSlug) => {
     const targetSlug = nextSlug || slug;
     const r = await fetch(`/api/admin/pages?slug=${targetSlug}`);
@@ -123,39 +118,9 @@ export default function AdminPages() {
             </p>
             <form onSubmit={save} className="space-y-4">
               <div>
-                <span className="text-sm block mb-2 font-medium">Page to edit</span>
-                <div className="flex flex-wrap gap-2" role="tablist" aria-label="Select page to edit">
-                  {pageOptions.map((option) => {
-                    const isActive = option.value === slug;
-                    return (
-                      <button
-                        key={option.value}
-                        type="button"
-                        role="tab"
-                        aria-selected={isActive}
-                        className={`px-4 py-2 rounded-full border transition-colors ${
-                          isActive
-                            ? 'bg-brand-primary text-white border-brand-primary shadow-sm'
-                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                        }`}
-                        onClick={() => {
-                          if (option.value !== slug) {
-                            setSlug(option.value);
-                            setPage(getDefaultPage(option.value));
-                          }
-                        }}
-                      >
-                        {option.label}
-                      </button>
-                    );
-                  })}
-                </div>
-                <label className="sr-only" htmlFor="page-select">
-                  Select page to edit
-                </label>
+                <label className="text-sm block mb-1">Page</label>
                 <select
-                  id="page-select"
-                  className="sr-only"
+                  className="w-full border rounded p-2"
                   value={slug}
                   onChange={(e) => {
                     const next = e.target.value;
@@ -163,11 +128,8 @@ export default function AdminPages() {
                     setPage(getDefaultPage(next));
                   }}
                 >
-                  {pageOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
+                  <option value="home">Home</option>
+                  <option value="donate">Donate</option>
                 </select>
               </div>
               <input
