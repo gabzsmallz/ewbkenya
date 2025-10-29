@@ -22,36 +22,69 @@ const defaultSections = [
 
 const createDefaultSections = () => defaultSections.map((section) => ({ ...section }));
 
-export default function AdminPages() {
-  const [page, setPage] = useState({
+const defaultPageContent = {
+  home: {
     slug: 'home',
     title: '',
     content: '',
     hero_image_url: '',
     sections: createDefaultSections(),
-  });
+  },
+  donate: {
+    slug: 'donate',
+    title: 'Donate',
+    content:
+      '<p>Support our projects. Use any of the options below.</p><ul><li><strong>Paybill/Till:</strong> <code>XXXXXX</code></li><li><strong>Bank:</strong> Account Name, Account No, Bank, Branch, SWIFT</li><li><strong>PayPal:</strong> <a href="#">Donate button</a></li></ul>',
+    hero_image_url: '',
+    sections: null,
+  },
+};
+
+const getDefaultPage = (slug) => {
+  const base = defaultPageContent[slug];
+  if (base) {
+    if (slug === 'home') {
+      return { ...base, sections: createDefaultSections() };
+    }
+    return { ...base };
+  }
+  return {
+    slug,
+    title: '',
+    content: '',
+    hero_image_url: '',
+    sections: null,
+  };
+};
+
+export default function AdminPages() {
+  const [slug, setSlug] = useState('home');
+  const [page, setPage] = useState(getDefaultPage('home'));
   const [busy, setBusy] = useState(false);
 
-  const load = async () => {
-    const r = await fetch('/api/admin/pages?slug=home');
+  const load = async (nextSlug) => {
+    const targetSlug = nextSlug || slug;
+    const r = await fetch(`/api/admin/pages?slug=${targetSlug}`);
     const d = await r.json();
     if (d) {
       setPage((p) => ({
-        ...p,
+        ...getDefaultPage(targetSlug),
         ...d,
         sections:
-          Array.isArray(d.sections) && d.sections.length > 0
-            ? d.sections
-            : createDefaultSections(),
+          targetSlug === 'home'
+            ? Array.isArray(d.sections) && d.sections.length > 0
+              ? d.sections
+              : createDefaultSections()
+            : null,
       }));
     } else {
-      setPage((p) => ({ ...p, sections: createDefaultSections() }));
+      setPage(getDefaultPage(targetSlug));
     }
   };
 
   useEffect(() => {
-    load();
-  }, []);
+    load(slug);
+  }, [slug]);
 
   const save = async (e) => {
     e.preventDefault();
@@ -59,7 +92,7 @@ export default function AdminPages() {
     const r = await fetch('/api/admin/pages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(page),
+      body: JSON.stringify({ ...page, slug }),
     });
     setBusy(false);
     if (!r.ok) alert('Save failed');
@@ -80,21 +113,38 @@ export default function AdminPages() {
           <div className="card shadow-brand">
             <h2 className="text-xl font-semibold mb-3">Landing Page Content</h2>
             <form onSubmit={save} className="space-y-4">
+              <div>
+                <label className="text-sm block mb-1">Page</label>
+                <select
+                  className="w-full border rounded p-2"
+                  value={slug}
+                  onChange={(e) => {
+                    const next = e.target.value;
+                    setSlug(next);
+                    setPage(getDefaultPage(next));
+                  }}
+                >
+                  <option value="home">Home</option>
+                  <option value="donate">Donate</option>
+                </select>
+              </div>
               <input
                 className="w-full border rounded p-2"
                 placeholder="Title"
                 value={page.title}
                 onChange={(e) => setPage({ ...page, title: e.target.value })}
               />
-              <div>
-                <label className="text-sm block mb-1">Hero Image</label>
-                <UploadImage
-                  onUploaded={(url) => setPage({ ...page, hero_image_url: url })}
-                />
-                {page.hero_image_url && (
-                  <img src={page.hero_image_url} className="mt-2 rounded" />
-                )}
-              </div>
+              {slug === 'home' && (
+                <div>
+                  <label className="text-sm block mb-1">Hero Image</label>
+                  <UploadImage
+                    onUploaded={(url) => setPage({ ...page, hero_image_url: url })}
+                  />
+                  {page.hero_image_url && (
+                    <img src={page.hero_image_url} className="mt-2 rounded" />
+                  )}
+                </div>
+              )}
               <div>
                 <label className="text-sm block mb-1">Content</label>
                 <ReactQuill
@@ -103,29 +153,31 @@ export default function AdminPages() {
                   onChange={(v) => setPage({ ...page, content: v })}
                 />
               </div>
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Scroll Sections</h3>
-                {(page.sections || []).map((section, idx) => (
-                  <div
-                    key={section?.key || idx}
-                    className="border rounded-lg p-3 space-y-3 bg-gray-50"
-                  >
-                    <input
-                      className="w-full border rounded p-2"
-                      placeholder="Section title"
-                      value={section?.title || ''}
-                      onChange={(e) =>
-                        updateSection(idx, { title: e.target.value })
-                      }
-                    />
-                    <ReactQuill
-                      theme="snow"
-                      value={section?.content || ''}
-                      onChange={(v) => updateSection(idx, { content: v })}
-                    />
-                  </div>
-                ))}
-              </div>
+              {slug === 'home' && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Scroll Sections</h3>
+                  {(page.sections || []).map((section, idx) => (
+                    <div
+                      key={section?.key || idx}
+                      className="border rounded-lg p-3 space-y-3 bg-gray-50"
+                    >
+                      <input
+                        className="w-full border rounded p-2"
+                        placeholder="Section title"
+                        value={section?.title || ''}
+                        onChange={(e) =>
+                          updateSection(idx, { title: e.target.value })
+                        }
+                      />
+                      <ReactQuill
+                        theme="snow"
+                        value={section?.content || ''}
+                        onChange={(v) => updateSection(idx, { content: v })}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
               <button className="btn btn-primary" disabled={busy}>
                 {busy ? 'Saving…' : 'Save Page'}
               </button>
