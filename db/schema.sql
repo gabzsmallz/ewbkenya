@@ -53,6 +53,7 @@ create table if not exists public.pages (
   title text,
   content text,
   hero_image_url text,
+  sections jsonb,
   updated_at timestamptz default now()
 );
 create table if not exists public.member_dashboard_items (
