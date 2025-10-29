@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-async function fileToBase64(file) {
+export async function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -17,6 +17,32 @@ async function fileToBase64(file) {
   });
 }
 
+export async function uploadImageFile(file, bucket = 'media') {
+  const base64 = await fileToBase64(file);
+  const response = await fetch('/api/admin/uploads', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      bucket,
+      name: file.name,
+      contentType: file.type,
+      base64,
+    }),
+  });
+
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({}));
+    throw new Error(payload.error || 'Upload failed');
+  }
+
+  const { url } = await response.json();
+  if (!url) {
+    throw new Error('Upload failed');
+  }
+
+  return url;
+}
+
 export default function UploadImage({ onUploaded, bucket = 'media' }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
@@ -28,24 +54,7 @@ export default function UploadImage({ onUploaded, bucket = 'media' }) {
     setError(null);
 
     try {
-      const base64 = await fileToBase64(file);
-      const response = await fetch('/api/admin/uploads', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          bucket,
-          name: file.name,
-          contentType: file.type,
-          base64,
-        }),
-      });
-
-      if (!response.ok) {
-        const payload = await response.json().catch(() => ({}));
-        throw new Error(payload.error || 'Upload failed');
-      }
-
-      const { url } = await response.json();
+      const url = await uploadImageFile(file, bucket);
       onUploaded?.(url);
     } catch (err) {
       setError(err.message || 'Upload failed');
