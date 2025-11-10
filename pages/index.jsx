@@ -3,6 +3,37 @@ import Layout from '../components/Layout';
 import Link from 'next/link';
 import { createClient } from '@supabase/supabase-js';
 
+const defaultTeamMembers = [
+  {
+    name: 'Jane Mwangi',
+    role: 'Program Director',
+    image:
+      'https://images.unsplash.com/photo-1531891437562-4301cf35b7e4?w=400&h=400&fit=crop',
+    bio: 'Leads our strategic partnerships and community co-design efforts.',
+  },
+  {
+    name: 'David Otieno',
+    role: 'Lead Engineer',
+    image:
+      'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=400&h=400&fit=crop',
+    bio: 'Guides project engineering standards and volunteer mentorship.',
+  },
+  {
+    name: 'Aisha Njeri',
+    role: 'Community Liaison',
+    image:
+      'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=400&fit=crop',
+    bio: 'Builds strong relationships with local leaders and project teams.',
+  },
+  {
+    name: 'Peter Kimani',
+    role: 'Innovation Fellow',
+    image:
+      'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
+    bio: 'Explores emerging technologies that support resilient communities.',
+  },
+];
+
 const defaultScrollSections = [
   {
     key: 'about',
@@ -33,6 +64,7 @@ const defaultScrollSections = [
     title: 'Meet Our Team',
     content:
       '<p>Our multidisciplinary team brings together experienced engineers, community organizers, and dedicated volunteers whose stories embody our values and commitment.</p>',
+    teamMembers: defaultTeamMembers,
   },
   {
     key: 'journey',
@@ -43,16 +75,25 @@ const defaultScrollSections = [
 ];
 
 export async function getServerSideProps() {
-  const s = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  );
-  const { data: page } = await s
-    .from('pages')
-    .select('*')
-    .eq('slug', 'home')
-    .single();
-  return { props: { page: page || null } };
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    return { props: { page: null } };
+  }
+
+  try {
+    const s = createClient(supabaseUrl, supabaseKey);
+    const { data: page } = await s
+      .from('pages')
+      .select('*')
+      .eq('slug', 'home')
+      .single();
+    return { props: { page: page || null } };
+  } catch (error) {
+    console.error('Failed to load page content from Supabase:', error);
+    return { props: { page: null } };
+  }
 }
 
 export default function Home({ page }) {
@@ -158,12 +199,53 @@ export default function Home({ page }) {
                 : 'opacity-20 translate-y-6'
             }`}
           >
-            <div className="max-w-4xl w-full text-center space-y-6 bg-white/70 backdrop-blur rounded-3xl shadow-xl p-10">
+            <div className="max-w-5xl w-full text-center space-y-8 bg-white/70 backdrop-blur rounded-3xl shadow-xl p-10">
               <h2 className="text-3xl font-semibold text-gray-900">{section.title}</h2>
-              <div
-                className="prose max-w-none mx-auto text-gray-600"
-                dangerouslySetInnerHTML={{ __html: section.content || '' }}
-              />
+              {section.key === 'team' ? (
+                <div className="space-y-10">
+                  <div
+                    className="prose max-w-none mx-auto text-gray-600"
+                    dangerouslySetInnerHTML={{ __html: section.content || '' }}
+                  />
+                  <div className="grid gap-8 sm:grid-cols-2">
+                    {(Array.isArray(section.teamMembers) && section.teamMembers.length
+                      ? section.teamMembers
+                      : defaultTeamMembers
+                    ).map((member) => (
+                      <div
+                        key={member.name}
+                        className="group relative flex flex-col items-center gap-5 rounded-[2.5rem] bg-white p-6 shadow-lg ring-1 ring-gray-100 transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl"
+                      >
+                        <div
+                          className="relative w-32 h-32 rounded-full shadow-lg"
+                          style={{
+                            border: '4px solid var(--brand-primary)',
+                            boxShadow: '0 18px 45px -20px rgba(15, 118, 110, 0.45)',
+                          }}
+                        >
+                          <img
+                            src={member.image}
+                            alt={member.name}
+                            className="h-full w-full rounded-full object-cover"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <h3 className="text-xl font-semibold text-gray-900">{member.name}</h3>
+                          <p className="text-sm uppercase tracking-wide text-teal-600">{member.role}</p>
+                          {member.bio ? (
+                            <p className="text-sm text-gray-600">{member.bio}</p>
+                          ) : null}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className="prose max-w-none mx-auto text-gray-600"
+                  dangerouslySetInnerHTML={{ __html: section.content || '' }}
+                />
+              )}
             </div>
           </section>
         ))}
