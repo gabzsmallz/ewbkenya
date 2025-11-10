@@ -142,7 +142,10 @@ export default function Home({ page }) {
           }
         });
       },
-      { threshold: 0.6 }
+      {
+        threshold: 0.1,
+        rootMargin: '-35% 0px -35% 0px',
+      }
     );
     sectionRefs.current.forEach((section) => {
       if (section) observer.observe(section);
