@@ -12,16 +12,6 @@ The portal recognises three access levels:
 
 Protected areas verify a signed-in Supabase profile and enforce role-based access before showing content.【F:components/Protected.jsx†L3-L30】【F:components/AdminOnly.jsx†L2-L7】
 
-### 2.1 Managing roles in Supabase
-All authenticated users are represented by a row in the `profiles` table, which stores their name, email, and `role` (`member` or `admin`).【F:db/schema.sql†L1-L7】 New accounts default to `member`, so you must explicitly promote administrators by updating this column.
-
-1. Open the Supabase project dashboard and navigate to **Table Editor → profiles**.
-2. Locate the user you want to update. If they have just signed up, ensure their email matches the Supabase Auth record.
-3. Set the **role** field to `admin` for staff who should access the Admin console; leave it as `member` for standard users.
-4. Save the change. Subsequent logins pick up the new role automatically because every protected route queries the profile via `/api/me` and checks the `role` field before rendering sensitive content.【F:components/Protected.jsx†L3-L30】【F:lib/adminGuard.js†L5-L15】
-
-To demote an administrator back to a regular member, repeat the steps above and change the `role` value to `member`. No application redeploy is required because Supabase returns the updated role on the next request.【F:components/AdminOnly.jsx†L2-L7】【F:pages/api/project-signup.js†L7-L18】
-
 ## 3. Accessing the portal
 Use the navigation bar to move between primary areas. The navigation automatically surfaces **Projects**, **Donate**, **Member**, and **Admin** (for administrators) links and offers a logout action for authenticated users.【F:components/Nav.jsx†L80-L129】
 
