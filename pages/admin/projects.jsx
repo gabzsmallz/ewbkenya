@@ -7,7 +7,7 @@ export default function AdminProjects(){
   ];
   const statusLabels=statusOptions.reduce((acc,opt)=>{acc[opt.value]=opt.label;return acc;},{});
   const [projects,setProjects]=useState([]);
-  const blankForm=()=>({title:'',slug:'',summary:'',description:'',status:'planned',cover_image_url:''});
+  const blankForm=()=>({title:'',slug:'',summary:'',description:'',status:'planned',cover_image_url:'',featured:false,display_order:0});
   const [form,setForm]=useState(blankForm);
   const [editingId,setEditingId]=useState(null);
   const [busy,setBusy]=useState(false);
@@ -22,7 +22,9 @@ export default function AdminProjects(){
       summary:project.summary||'',
       description:project.description||'',
       status:project.status||'planned',
-      cover_image_url:project.cover_image_url||''
+      cover_image_url:project.cover_image_url||'',
+      featured:project.featured||false,
+      display_order:typeof project.display_order==='number'?project.display_order:(project.display_order??0)
     });
   };
   const save=async(e)=>{
@@ -48,6 +50,29 @@ export default function AdminProjects(){
             <option value="in_progress">In Progress</option>
             <option value="completed">Completed</option>
           </select>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              className="h-4 w-4"
+              checked={!!form.featured}
+              onChange={e=>setForm({...form,featured:e.target.checked})}
+            />
+            Featured project
+          </label>
+          <div>
+            <label className="text-sm font-medium">Display order</label>
+            <input
+              type="number"
+              className="mt-1 w-full border rounded p-2"
+              value={form.display_order ?? ''}
+              onChange={e=>{
+                const value=e.target.value;
+                setForm({...form,display_order:value===''?null:Number(value)});
+              }}
+              placeholder="0"
+            />
+            <p className="text-xs text-gray-500 mt-1">Lower numbers appear first.</p>
+          </div>
           <div><label className="text-sm">Cover Image</label><UploadImage onUploaded={(url)=>setForm({...form,cover_image_url:url})}/>{form.cover_image_url&&<img src={form.cover_image_url} className="mt-2 rounded" />}</div>
           <div className="flex items-center gap-2">
             <button className="btn btn-primary" disabled={busy}>{busy?'Saving…':editingId?'Update Project':'Save Project'}</button>
@@ -56,7 +81,7 @@ export default function AdminProjects(){
         </form>
       </div>
       <div className="card shadow-brand"><div className="flex items-center justify-between mb-3"><h2 className="text-xl font-semibold">Projects</h2>{editingId&&<button className="btn btn-ghost" onClick={startNew}>New Project</button>}</div>
-        <div className="space-y-3">{Array.isArray(projects)&&projects.length?projects.map(p=>(<div key={p.id} className={`border rounded p-3 ${editingId===p.id?'border-brand-500':'border-gray-200'}`}><div className="flex items-center justify-between"><div><div className="font-semibold">{p.title}</div><div className="text-xs text-gray-500">{p.slug} • {statusLabels[p.status]||p.status}</div></div><div className="flex items-center gap-2"><button className="btn btn-ghost" onClick={()=>startEdit(p)}>Edit</button><button className="btn btn-ghost" onClick={()=>del(p.id)}>Delete</button></div></div></div>)):<p>No projects yet.</p>}</div>
+        <div className="space-y-3">{Array.isArray(projects)&&projects.length?projects.map(p=>(<div key={p.id} className={`border rounded p-3 ${editingId===p.id?'border-brand-500':'border-gray-200'}`}><div className="flex items-center justify-between gap-4"><div><div className="font-semibold flex items-center gap-2">{p.title}{p.featured&&<span className="text-xs text-amber-600 font-semibold uppercase">Featured</span>}</div><div className="text-xs text-gray-500">{p.slug} • {statusLabels[p.status]||p.status} • Order {p.display_order ?? '—'}</div></div><div className="flex items-center gap-2"><button className="btn btn-ghost" onClick={()=>startEdit(p)}>Edit</button><button className="btn btn-ghost" onClick={()=>del(p.id)}>Delete</button></div></div></div>)):<p>No projects yet.</p>}</div>
       </div>
     </div>
   </AdminShell></AdminOnly></Layout>);
