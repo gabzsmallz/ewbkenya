@@ -12,6 +12,8 @@ create table if not exists public.projects (
   summary text,
   description text,
   status text check (status in ('planned','in_progress','completed')) default 'planned',
+  featured boolean not null default false,
+  display_order int,
   start_date date, end_date date,
   cover_image_url text,
   created_by uuid references public.profiles(id),

@@ -1,6 +1,7 @@
 import Layout from '../../components/Layout'; import { createClient } from '@supabase/supabase-js';
-export async function getServerSideProps(){ const s=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL,process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY); const {data:projects}=await s.from('projects').select('id,slug,title,summary,status,cover_image_url').order('created_at',{ascending:false}); return { props:{ projects: projects||[] } }; }
+export async function getServerSideProps(){ const s=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL,process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY); const {data:projects}=await s.from('projects').select('id,slug,title,summary,status,cover_image_url,featured,display_order').order('featured',{ascending:false}).order('display_order',{ascending:true,nullsLast:true}).order('created_at',{ascending:false}); return { props:{ projects: projects||[] } }; }
 export default function Projects({projects}){
+  const safeProjects=Array.isArray(projects)?projects:[];
   const statusLabels={
     planned:'Planned',
     in_progress:'In Progress',
@@ -13,8 +14,8 @@ export default function Projects({projects}){
       .replace(/_/g,' ')
       .replace(/\b\w/g,(char)=>char.toUpperCase());
   };
-  const totalProjects = Array.isArray(projects) ? projects.length : 0;
-  const statusCounts = (Array.isArray(projects) ? projects : []).reduce((acc, project) => {
+  const totalProjects = safeProjects.length;
+  const statusCounts = safeProjects.reduce((acc, project) => {
     const status = project.status || 'unknown';
     acc[status] = (acc[status] || 0) + 1;
     return acc;
@@ -29,6 +30,8 @@ export default function Projects({projects}){
     const color = palette[index % palette.length];
     return `${color} ${startAngle}deg ${startAngle + sliceAngle}deg`;
   }).join(', ');
+  const featuredProject=safeProjects.find(project=>project.featured);
+  const otherProjects=featuredProject?safeProjects.filter(p=>p.id!==featuredProject.id):safeProjects;
 
   return(<Layout title="Projects"><h1 className="text-2xl font-bold mb-4" style={{color:'var(--brand-primary)'}}>Projects</h1>
     <div className="mb-8 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -62,8 +65,28 @@ export default function Projects({projects}){
         </div>
       </div>
     </div>
+    {featuredProject&&(
+      <div className="mb-8 rounded-2xl border border-amber-200 bg-amber-50 p-6 shadow-brand md:flex md:items-center md:gap-8">
+        <div className="flex-1">
+          <p className="text-xs font-semibold uppercase tracking-widest text-amber-600">Featured Project</p>
+          <h2 className="mt-2 text-2xl font-bold" style={{color:'var(--brand-primary)'}}>{featuredProject.title}</h2>
+          <p className="mt-2 text-sm text-gray-600">{featuredProject.summary||'Learn more about our highlighted initiative.'}</p>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <span className="badge bg-amber-100 text-amber-700">{formatStatus(featuredProject.status)}</span>
+            <a className="btn btn-primary" href={`/projects/${featuredProject.slug}`}>Explore Project</a>
+          </div>
+        </div>
+        {featuredProject.cover_image_url&&(
+          <img
+            src={featuredProject.cover_image_url}
+            alt={`${featuredProject.title} cover image`}
+            className="mt-4 h-52 w-full rounded-xl object-cover md:mt-0 md:w-1/2"
+          />
+        )}
+      </div>
+    )}
     <div className="grid md:grid-cols-2 gap-4">
-      {Array.isArray(projects)&&projects.length?projects.map(p=>(
+      {otherProjects.length?otherProjects.map(p=>(
         <div key={p.id} className="card shadow-brand relative">
           <span className="absolute left-0 top-0 h-full w-1 rounded-l-xl" style={{background:'linear-gradient(var(--brand-primary), var(--brand-accent))'}}/>
           <div className="flex items-center justify-between">
@@ -80,6 +103,6 @@ export default function Projects({projects}){
           <p className="mt-2 text-sm text-gray-600">{p.summary||''}</p>
           <a className="btn btn-primary mt-3" href={`/projects/${p.slug}`}>View</a>
         </div>
-      )):<p>No projects yet.</p>}
+      )):<p className="text-gray-600">{featuredProject?'No additional projects yet.':'No projects yet.'}</p>}
     </div></Layout>);
 }
